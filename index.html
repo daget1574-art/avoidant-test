@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회피형 성격 진단 검사</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .category {
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .category-header:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f92 100%);
+        }
+        .category-content {
+            padding: 30px;
+            display: none;
+        }
+        .category-content.active {
+            display: block;
+        }
+        .question {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .question:last-child {
+            border-bottom: none;
+        }
+        .question-number {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+        .question-text {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .answers {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .answer-btn {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .answer-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .answer-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .results {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .results.active {
+            display: block;
+        }
+        .score-box {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .score-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .score-label {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        .score-level {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .category-score {
+            background: #f5f7fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-score-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .category-score-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+        .interpretation {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .interpretation h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .interpretation p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .reset-btn:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>회피형 성격 진단 검사</h1>
+            <p>100개의 질문으로 당신의 회피형 성향을 진단합니다</p>
+            <p style="font-size: 0.9em; margin-top: 15px;">각 문항에 1~5점으로 응답해주세요 (1=전혀 그렇지 않다, 5=매우 그렇다)</p>
+        </div>
+
+        <div id="questionsContainer"></div>
+
+        <div id="results" class="results">
+            <h2 style="margin-bottom: 30px; text-align: center;">검사 결과</h2>
+            <div class="score-box">
+                <div class="score-label">종합 점수</div>
+                <div class="score-number" id="totalScore">0%</div>
+                <div class="score-level" id="scoreLevel">매우 낮음</div>
+            </div>
+
+            <div class="interpretation">
+                <h3>결과 해석</h3>
+                <div id="interpretationText"></div>
+            </div>
+
+            <h3 style="margin-bottom: 20px;">카테고리별 분석</h3>
+            <div id="categoryScores"></div>
+
+            <button class="reset-btn" onclick="location.reload()">다시 검사하기</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = {
+            "친밀감 회피": [
+                "누군가가 내게 깊은 감정 표현을 할 때 불편함을 느낀다",
+                "장기적인 관계 약속이 두렵다",
+                "다른 사람에게 의존하는 것을 싫어한다",
+                "누군가가 내 개인 공간을 침범하면 답답함을 느낀다",
+                "연인이 자주 연락하려고 하면 부담스럽다",
+                "너무 가까워지는 관계를 무의식적으로 거리를 둔다",
+                "감정적 친밀감보다 독립적 관계를 선호한다",
+                "사람들이 나를 알아주려고 할 때 벽을 세운다",
+                "오래 함께 있으면 질려서 혼자 있고 싶어진다",
+                "깊은 감정 대화는 피하는 편이다"
+            ],
+            "감정 표현 억제": [
+                "내 감정을 쉽게 드러내지 않는다",
+                "슬픔을 느껴도 남에게 보여주지 않으려 한다",
+                "도움을 청하는 것이 약함을 보이는 것 같아 싫다",
+                "화난 감정을 감추는 데 익숙하다",
+                "약한 모습을 보이는 것을 극도로 피한다",
+                "감정 때문에 눈물을 흘리는 것이 창피하다",
+                "내 문제를 남에게 말하면 폐를 끼친다고 생각한다",
+                "감정적인 사람들을 이해하기 어렵다",
+                "친밀한 사람에게도 내 진짜 감정을 숨긴다",
+                "감정을 표현하는 것이 오히려 관계를 망친다고 생각한다"
+            ],
+            "사회적 거리 두기": [
+                "많은 친구들과 지내기보다 혼자 있는 것을 선호한다",
+                "사람들과 자주 어울리는 것이 피곤하다",
+                "친목 모임이나 파티에 참석하기 싫다",
+                "누군가가 내게 관심을 보이면 불편하다",
+                "사람들과 깊은 대화를 나누고 싶지 않다",
+                "친구들이 내 일에 간섭하는 것을 극도로 싫어한다",
+                "다른 사람의 기대를 만족시키려는 것이 부담스럽다",
+                "집단에 속하기보다 독립적으로 행동하고 싶다",
+                "누군가가 나를 필요로 하는 것 자체가 거부감을 준다",
+                "관계를 유지하려고 노력하기 싫다"
+            ],
+            "책임 회피": [
+                "싫은 일이나 어려운 상황은 미루는 경향이 있다",
+                "갈등을 직면하기보다 외면하려 한다",
+                "문제가 생기면 도망치고 싶다",
+                "결정해야 할 때 계속 미루게 된다",
+                "의무감 있는 약속은 최대한 피한다",
+                "책임 있는 위치는 맡기 싫다",
+                "어려운 대화를 나눠야 할 때 회피한다",
+                "실패할 수 있는 상황은 처음부터 하지 않는다",
+                "타인의 기대에 부응할 책임감이 스트레스다",
+                "장기적 계획이 필요한 일은 하기 싫다"
+            ],
+            "독립성 과도 강조": [
+                "누구에게도 도움을 청하고 싶지 않다",
+                "혼자 다 해결할 수 있어야 한다고 생각한다",
+                "누군가에게 빚진 것 같은 기분이 싫다",
+                "다른 사람의 도움을 받으면 자존심 상한다",
+                "완전히 독립적이어야 가치 있는 사람이라 생각한다",
+                "누군가에게 의존한다는 것을 상상할 수 없다",
+                "팀 작업보다 혼자 일하는 것이 훨씬 낫다",
+                "다른 사람과 의존 관계가 되는 것이 두렵다",
+                "돈이나 정서적 지원을 타인에게 요청하기 어렵다",
+                "내가 약한 점을 인정하고 싶지 않다"
+            ],
+            "충돌 회피": [
+                "다른 의견이 나오면 그냥 상대방 말에 따른다",
+                "내 의견을 주장하기보다 침묵하는 편이다",
+                "누군가와 싸우면 아예 관계를 끊고 싶다",
+                "갈등 상황에서 도망치는 것이 낫다고 생각한다",
+                "상대방의 기분을 맞추기 위해 내 생각을 숨긴다",
+                "비판받는 것이 너무 두렵다",
+                "관계에 문제가 있으면 외면하곤 한다",
+                "불편한 주제는 절대 꺼내지 않는다",
+                "다투는 과정을 거치고 싶지 않다",
+                "의견 차이가 나면 관계가 끝날 것 같다"
+            ],
+            "신뢰 부족": [
+                "사람들이 언제 나를 배신할지 모르겠다",
+                "남의 약속을 쉽게 믿지 않는다",
+                "타인의 진심을 의심하는 경향이 있다",
+                "누군가가 친절하면 이유가 있을 거라고 생각한다",
+                "완전히 신뢰할 수 있는 사람이 있을까 의심스럽다",
+                "다른 사람에게 약점을 보이면 이용당할 것 같다",
+                "관계에서 항상 조심스러운 편이다",
+                "친밀한 비밀을 누군가에게 맡길 수 없다",
+                "사람들의 진정한 의도가 뭔지 모르겠다",
+                "신뢰하기 전에 오랜 시간이 필요하다"
+            ],
+            "감정적 둔감": [
+                "다른 사람의 감정 변화를 잘 모른다",
+                "누군가가 고통받을 때 뭘 해야 할지 모르겠다",
+                "남의 기분을 맞추려는 노력이 부족하다",
+                "감정적인 상황에서 어색함을 느낀다",
+                "누군가 울 때 어떻게 반응해야 할지 모른다",
+                "감정 표현이 과하다고 느껴지면 피한다",
+                "다른 사람의 감정이 내게 영향을 덜 미친다",
+                "공감 능력이 부족하다고 말을 자주 듣는다",
+                "감정적 지원을 해줄 때 어색함을 느낀다",
+                "누군가의 감정 문제에 깊이 들어가고 싶지 않다"
+            ],
+            "자기 중심성": [
+                "내 시간과 공간을 남에게 침해당하기 싫어한다",
+                "다른 사람의 필요보다 내 필요가 더 중요하다",
+                "상대방의 불편함을 신경 쓰지 않으곤 한다",
+                "내가 원하지 않는 일은 하지 않는다",
+                "상대방의 입장을 생각하기보다 내 생각이 우선이다",
+                "남을 배려하는 것이 번거로울 때가 많다",
+                "내 계획이 변경되는 것을 심하게 싫어한다",
+                "상대방의 기대를 맞춰주는 것이 짜증 난다",
+                "관계에서 나의 편의가 가장 중요하다",
+                "다른 사람의 감정보다 내 편안함이 우선이다"
+            ],
+            "회피적 대처": [
+                "문제가 생기면 음주나 쇼핑 같은 것으로 푼다",
+                "스트레스받을 때 관계에서 물러난다",
+                "감정적으로 힘들 때 혼자 있는 것을 선택한다",
+                "불편한 감정은 무시하는 게 낫다고 생각한다",
+                "어려운 상황에서 실제로 대면하기 싫다",
+                "문제를 직시하는 대신 다른 것에 집중한다",
+                "부정적 감정을 애초에 느끼지 않으려 한다",
+                "관계 문제는 시간이 해결할 거라고 생각한다",
+                "현실에서 벗어나 혼자만의 세계에 빠지곤 한다",
+                "극복하기 어려운 감정은 차단해버린다"
+            ]
+        };
+
+        let responses = {};
+
+        function initQuestions() {
+            const container = document.getElementById('questionsContainer');
+            let questionNum = 1;
+
+            Object.entries(questions).forEach((entry, categoryIdx) => {
+                const [category, items] = entry;
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.innerHTML = `
+                    <div>${category}</div>
+                    <div>▼</div>
+                `;
+                header.onclick = () => {
+                    const content = categoryDiv.querySelector('.category-content');
+                    content.classList.toggle('active');
+                    header.style.background = content.classList.contains('active') 
+                        ? 'linear-gradient(135deg, #5568d3 0%, #6a3f92 100%)'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                };
+
+                const content = document.createElement('div');
+                content.className = 'category-content';
+                
+                items.forEach((question) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'question';
+                    questionDiv.innerHTML = `
+                        <div class="question-text">
+                            <span class="question-number">${questionNum}.</span>${question}
+                        </div>
+                        <div class="answers">
+                            ${[1,2,3,4,5].map(score => `
+                                <button class="answer-btn" onclick="answerQuestion(${questionNum-1}, ${score}, this)">
+                                    ${score}
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                    content.appendChild(questionDiv);
+                    questionNum++;
+                });
+
+                categoryDiv.appendChild(header);
+                categoryDiv.appendChild(content);
+                container.appendChild(categoryDiv);
+            });
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'submit-btn';
+            submitBtn.textContent = '결과 확인하기';
+            submitBtn.id = 'submitBtn';
+            submitBtn.onclick = showResults;
+            container.appendChild(submitBtn);
+
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'progress-text';
+            progressDiv.id = 'progressText';
+            progressDiv.textContent = '0/100 완료';
+            container.insertBefore(progressDiv, submitBtn);
+        }
+
+        function answerQuestion(idx, score, btn) {
+            responses[idx] = score;
+            const btns = btn.parentElement.querySelectorAll('.answer-btn');
+            btns.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(responses).length;
+            document.getElementById('progressText').textContent = `${answered}/100 완료`;
+            const submitBtn = document.getElementById('submitBtn');
+            if (answered === 100) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+            }
+        }
+
+        function showResults() {
+            const categoryScores = {};
+            let totalScore = 0;
+
+            const categoryEntries = Object.entries(questions);
+            let questionIdx = 0;
+
+            categoryEntries.forEach(([category, items]) => {
+                let categoryScore = 0;
+                items.forEach(() => {
+                    categoryScore += responses[questionIdx] || 0;
+                    totalScore += responses[questionIdx] || 0;
+                    questionIdx++;
+                });
+                categoryScores[category] = {
+                    score: categoryScore,
+                    max: items.length * 5,
+                    percentage: Math.round((categoryScore / (items.length * 5)) * 100)
+                };
+            });
+
+            const totalPercentage = Math.round((totalScore / 500));
+
+            let levelText = '매우 낮음';
+            let levelColor = 'rgb(52, 211, 153)';
+
+            if (totalPercentage >= 80) {
+                levelText = '매우 높음 (전문가 상담 권장)';
+                levelColor = 'rgb(239, 68, 68)';
+            } else if (totalPercentage >= 60) {
+                levelText = '높음 (개선 노력 필요)';
+                levelColor = 'rgb(249, 115, 22)';
+            } else if (totalPercentage >= 40) {
+                levelText = '중간';
+                levelColor = 'rgb(234, 179, 8)';
+            } else if (totalPercentage >= 20) {
+                levelText = '낮음';
+                levelColor = 'rgb(59, 130, 246)';
+            }
+
+            document.getElementById('totalScore').textContent = totalPercentage + '%';
+            document.getElementById('scoreLevel').textContent = levelText;
+            document.getElementById('scoreLevel').style.background = levelColor;
+            document.getElementById('scoreLevel').style.color = 'white';
+
+            const interpretations = {
+                '매우 낮음': '회피형 성향이 거의 없습니다. 건강한 관계 형성이 매우 수월합니다.',
+                '낮음': '회피형 성향이 낮습니다. 건강한 관계 형성이 비교적 수월합니다.',
+                '중간': '회피형 성향이 중간 정도입니다. 특정 영역에 집중해 개선할 수 있습니다.',
+                '높음 (개선 노력 필요)': '회피형 성향이 상당합니다. 자신의 행동 패턴을 인식하고 개선 노력이 필요합니다.',
+                '매우 높음 (전문가 상담 권장)': '회피형 성향이 매우 강합니다. 전문가 상담을 고려해보세요.'
+            };
+
+            document.getElementById('interpretationText').innerHTML = `<p>${interpretations[levelText]}</p>`;
+
+            const categoryScoresDiv = document.getElementById('categoryScores');
+            categoryScoresDiv.innerHTML = '';
+
+            Object.entries(categoryScores).forEach(([category, scores]) => {
+                const div = document.createElement('div');
+                div.className = 'category-score';
+                div.innerHTML = `
+                    <div>
+                        <div class="category-score-name">${category}</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${scores.percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="category-score-value">${scores.percentage}%</div>
+                `;
+                categoryScoresDiv.appendChild(div);
+            });
+
+            document.getElementById('questionsContainer').style.display = 'none';
+            document.getElementById('results').classList.add('active');
+        }
+
+        initQuestions();
+    </script>
+</body>
+</html>
